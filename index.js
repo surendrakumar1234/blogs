@@ -104,10 +104,9 @@ app.get("/", (req, res) => {
           if (req.query.type) {
             return res.json(fsdata);
           }
-          return res.json("homepage", {
+          return res.json({
             fsdata,
-            jobs,
-            route: "/",
+            jobs
           });
         }
       });
