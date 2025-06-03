@@ -1,9 +1,8 @@
 require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
-// const axios = require("axios");
+const axios = require("axios");
 const cheerio = require("cheerio");
-// const index2 = require("./index2");
 
 const express = require("express");
 const app = express();
@@ -27,91 +26,167 @@ app.use(cors(corsOptions));
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(express.static(path.resolve("./public")));
 
-app.get("/", (req, res) => {
-  fs.readFile("./homepage.json", "utf-8", (err, data) => {
+app.get("/", async (req, response) => {
+  try {
+    const res = await fetch("https://skresult.com");
+    const htmlData = await res.text();
+    const $ = cheerio.load(htmlData);
+    let newBlogs = [];
+    $("article").each(async (index, element) => {
+      let blogPageUrl = $(element).find("header").find("h2>a").attr("href");
+      blogPageUrl = blogPageUrl.replace("https://skresult.com/", "");
+      console.log(blogPageUrl);
+
+      let title = $(element).find("header").find("h2>a").text().trim();
+      title = title.replaceAll("\n", "");
+      let timeStamps = $(element)
+        .find("header")
+        .find("div>span>time")
+        .attr("datetime");
+      let thumbnailUrl = $(element)
+        .find("div.post-image>a>img")
+        .attr("data-lazy-src");
+      if (!thumbnailUrl) {
+        thumbnailUrl = $(element).find("div.post-image>a>img").attr("src");
+      }
+      let id = newBlogs.length + 1;
+      let category = $(element).find("footer>span.cat-links>a").text();
+      newBlogs.push({
+        title,
+        timeStamps,
+        thumbnailUrl,
+        id,
+        blogPageUrl,
+        category,
+      });
+    });
+    console.log(newBlogs);
+    return response.json(newBlogs);
+  } catch (error) {
+    return res.json(error);
+  }
+});
+
+app.get("/search", (req, res) => {
+  if (req.query.query) {
+    fs.readFile("./homepage.json", "utf-8", (err, data) => {
+      if (err) {
+        console.log(err);
+        res.send("Error Ho gaya Bhai");
+      } else {
+        let fsdata = JSON.parse(data);
+        fsdata = fsdata.filter((blog) =>
+          blog.title.toLowerCase().includes(req.query.query.toLowerCase())
+        );
+        if (fsdata) {
+          // console.log("fsdata", fsdata);
+          res.render("searchpage", {
+            fsdata,
+          });
+        } else {
+          res.send("No results found");
+        }
+      }
+    });
+  } else {
+    res.render("searchpage");
+  }
+});
+
+app.get("/results", (req, res) => {
+  fs.readFile("./homepage.json", (err, data) => {
     if (err) {
       console.log(err);
-      return res.send("<h1>Error Ho Gaya Bhai.</h1>");
+      res.send("Erro ho gaya bhai");
     } else {
-      let jobs;
-      fs.readFile("./jobbulatin.json", "utf-8", (err, jobdata) => {
-        if (err) {
-          console.log(err);
-          return res.send("hello2");
-        } else {
-          jobs = JSON.parse(jobdata);
-          // console.log("jobbulatin", jobs);
-
-          const fsdata = JSON.parse(data);
-          fsdata.forEach((data, i) => {
-            const blogId = data.timeStamps;
-            const uid = data.id;
-            data.uid = uid;
-            data.id = blogId;
-            
-
-            //added on 16 march
-            let colors = [
-              "#0f86f5",
-              "#83b82e",
-              "#ff554b",
-              "#f89c1d",
-              "#39c3a2",
-              "#9d46f3",
-              "#7059ff",
-              "#3e9e3e",
-            ];
-            if (i >= colors.length) {
-              const clrId = i - colors.length;
-              if (clrId >= colors.length) {
-                data.color = colors[0];
-              } else {
-                data.color = colors[clrId];
-              }
-            } else {
-              data.color = colors[i];
-            }
-            //added on 16 march
-
-            const date = new Date(data.timeStamps);
-            const currDate = new Date();
-            const yearGap = currDate.getFullYear() - date.getFullYear();
-            const monthGap = currDate.getMonth() - date.getMonth();
-            const dayGap = currDate.getDate() - date.getDate();
-            const hourGap = currDate.getHours() - date.getHours();
-            const minGap = currDate.getMinutes() - date.getMinutes();
-            const secGap = currDate.getSeconds() - date.getSeconds();
-
-            if (yearGap !== 0) {
-              data.timeStamps = yearGap + " year ago";
-            } else if (monthGap !== 0) {
-              data.timeStamps = monthGap + " month ago";
-            } else if (dayGap !== 0) {
-              data.timeStamps = dayGap + " day ago";
-            } else if (hourGap !== 0) {
-              data.timeStamps = hourGap + " hour ago";
-            } else if (minGap !== 0) {
-              data.timeStamps = minGap + " minutes ago";
-            } else if (secGap !== 0) {
-              data.timeStamps = secGap + " seconds ago";
-            } else {
-              data.timeStamps = date.toLocaleTimeString().toLowerCase();
-            }
-          });
-          // console.log(fsdata);
-          if (req.query.type) {
-            return res.json(fsdata);
-          }
-          return res.json({
-            fsdata,
-            jobs
-          });
-        }
-      });
+      let fsdata = JSON.parse(data);
+      fsdata = fsdata.filter((blog) =>
+        blog.category.toLowerCase().includes("result")
+      );
+      if (fsdata) {
+        // console.log("fsdata", fsdata);
+        res.json(fsdata);
+      } else {
+        res.json({ msg: "No results found" });
+      }
     }
   });
+  return res.json;
+});
+
+app.get("/admitcard", (req, res) => {
+  fs.readFile("./homepage.json", (err, data) => {
+    if (err) {
+      console.log(err);
+      res.send("<h1>Erro ho gaya bhai</h1>");
+    } else {
+      let fsdata = JSON.parse(data);
+      fsdata = fsdata.filter((blog) =>
+        blog.category.toLowerCase().includes("admit")
+      );
+      if (fsdata) {
+        // console.log("fsdata", fsdata);
+        res.json(fsdata);
+      } else {
+        res.json({ msg: "No results found" });
+      }
+    }
+  });
+  return res.json;
+});
+
+app.get("/api/blog/:id", async (req, response) => {
+  try {
+    const blogurl = "https://skresult.com/" + req.params.id;
+    console.log(blogurl);
+    const res = await fetch(blogurl);
+    const htmlData = await res.text();
+
+    const $ = cheerio.load(htmlData);
+    let title = $("article>div>header>h1").text().trim();
+    title = title.replaceAll("\n", "");
+    let timeStamps = $("article")
+      .find("header")
+      .find("time")
+      .attr("datetime")
+      .trim();
+    let thumbnailUrl = $("article")
+      .find("div>figure>img")
+      .attr("data-lazy-src");
+    let content = $("article").find("div.entry-content").toString();
+    content = content.replaceAll("\n", "");
+    content = content.replaceAll("https://skresult.com", "");
+    content = content.replaceAll("skresult.com", "");
+    content = content.replaceAll("SKResult.com", "");
+    content = content.replaceAll("WhatsApp Group", "");
+    content = content.replaceAll(
+      "https://www.whatsapp.com/channel/0029Va4UN8U29757sLNagO25",
+      ""
+    );
+    content = content.replaceAll(
+      "whatsapp.com/channel/0029Va4UN8U29757sLNagO25",
+      ""
+    );
+    content = content.replaceAll("Telegram Group", "");
+    content = content.replaceAll(
+      "https://telegram.me/skresult",
+      "https://telegram.me/levitt25"
+    );
+    content = content.replaceAll("skresult", "levitt25");
+    content = content.replaceAll("Join Now", "https://telegram.me/levitt25");
+    const blog = {
+      id: req.params.id,
+      title,
+      timeStamps,
+      thumbnailUrl,
+      content,
+    };
+
+    return response.json(blog);
+  } catch (error) {
+    return response.json(error);
+  }
 });
 
 app.get("/api/:id", (req, res) => {
