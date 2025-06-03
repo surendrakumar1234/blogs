@@ -61,7 +61,6 @@ app.get("/", async (req, response) => {
         category,
       });
     });
-    console.log(newBlogs);
     return response.json(newBlogs);
   } catch (error) {
     return res.json(error);
