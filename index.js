@@ -7,7 +7,7 @@ const cheerio = require("cheerio");
 
 const express = require("express");
 const app = express();
-const port = process.env.port;
+const port = process.env.port || 3000;
 // Cors
 const cors = require("cors");
 const corsOptions = {
@@ -160,4 +160,9 @@ app.get("/api/:id", (req, res) => {
   });
 });
 
-app.listen(port,()=>console.log("server started"));
+app.listen(port,(err)=>{
+  if(err){
+    console.log(err)
+  }
+  console.log(port+"server start ho gaya")
+});
