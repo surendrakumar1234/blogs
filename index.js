@@ -3,7 +3,6 @@ const path = require("path");
 const fs = require("fs");
 // const axios = require("axios");
 const cheerio = require("cheerio");
-const nodemailer = require("nodemailer");
 // const index2 = require("./index2");
 
 const express = require("express");
