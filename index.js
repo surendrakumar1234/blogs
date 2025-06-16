@@ -37,7 +37,7 @@ app.get("/", async (req, response) => {
       let blogPageUrl = $(element).find("header").find("h2>a").attr("href");
       blogPageUrl = blogPageUrl.replace("https://skresult.com/", "");
 
-blogPageUrl = blogPageUrl.replace("https://studygovtjov.in/", "");
+blogPageUrl = blogPageUrl.replace("https://studygovtjob.in/", "");
       console.log(blogPageUrl);
 
       let title = $(element).find("header").find("h2>a").text().trim();
