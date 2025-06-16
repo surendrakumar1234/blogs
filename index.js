@@ -29,7 +29,7 @@ app.use(express.json());
 
 app.get("/", async (req, response) => {
   try {
-    const res = await fetch("https://skresult.com");
+    const res = await fetch("https://studygovtjob.in");
     const htmlData = await res.text();
     const $ = cheerio.load(htmlData);
     let newBlogs = [];
@@ -137,7 +137,7 @@ app.get("/admitcard", (req, res) => {
 
 app.get("/api/blog/:id", async (req, response) => {
   try {
-    const blogurl = "https://skresult.com/" + req.params.id;
+    const blogurl = "https://studygovtjob.in/" + req.params.id;
     console.log(blogurl);
     const res = await fetch(blogurl);
     const htmlData = await res.text();
@@ -156,8 +156,8 @@ app.get("/api/blog/:id", async (req, response) => {
     let content = $("article").find("div.entry-content").toString();
     content = content.replaceAll("\n", "");
     content = content.replaceAll("https://skresult.com", "");
-    content = content.replaceAll("skresult.com", "");
-    content = content.replaceAll("SKResult.com", "");
+    content = content.replaceAll("studygovtjob.in", "");
+    content = content.replaceAll("Studygovtjob.in", "");
     content = content.replaceAll("WhatsApp Group", "");
     content = content.replaceAll(
       "https://www.whatsapp.com/channel/0029Va4UN8U29757sLNagO25",
