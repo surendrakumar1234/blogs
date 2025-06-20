@@ -37,7 +37,7 @@ app.get("/", async (req, response) => {
       let blogPageUrl = $(element).find("header").find("h2>a").attr("href");
       blogPageUrl = blogPageUrl.replace("https://skresult.com/", "");
 
-blogPageUrl = blogPageUrl.replace("https://studygovtjob.in/", "");
+blogPageUrl = blogPageUrl.replace("https://skresult.in/", "");
       console.log(blogPageUrl);
 
       let title = $(element).find("header").find("h2>a").text().trim();
@@ -139,7 +139,7 @@ app.get("/admitcard", (req, res) => {
 
 app.get("/api/blog/:id", async (req, response) => {
   try {
-    const blogurl = "https://studygovtjob.in/" + req.params.id;
+    const blogurl = "https://skresult.in/" + req.params.id;
     console.log(blogurl);
     const res = await fetch(blogurl);
     const htmlData = await res.text();
